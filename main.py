@@ -191,6 +191,21 @@ def evaluate_solution(input_data, solution):
     return score
 
 
+def validate_solution(intersactions, total_duration, cycle_time):
+    total_sum = 0
+    for i in range(len(intersactions)):
+        sum_of_points = 0
+        for street in intersactions[i]:
+            sum_of_points += street['duration']
+        if sum_of_points > cycle_time:
+            return 'Duration per cycle for intersaction {} exceeded time.'.format(i)
+        total_sum += sum_of_points
+    if total_sum > total_duration:
+        return 'Total Duration of simulation exceeded time.'
+    else:
+        return 'Solution is Valid.'
+
+
 def main():
     input_data = read_file()
     streets = input_data['streets']
@@ -201,9 +216,10 @@ def main():
     intersactions = init_solution(
         streets, number_of_intersactions, cycle_time)
 
+    print('Validation: ')
+    print(validate_solution(intersactions, input_data['duration'], cycle_time))
     print('Evaluation: ')
     print(evaluate_solution(input_data, intersactions))
-    write_file(intersactions)
 
 
 if __name__ == '__main__':
