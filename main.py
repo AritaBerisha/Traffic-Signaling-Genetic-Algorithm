@@ -1,55 +1,17 @@
 import random
 
-def evaluate_solution(input_data, solution):
-    """Evaluate solution
 
-    Args:
-        input_data (Dict): Input data
-        solution (List): Solution
-
-    Returns:
-        float: Solution score
-    """
-    bonus = input_data['bonus']
-    streets = input_data['streets']
-    cars = input_data['cars']
-    duration = input_data['duration']
-
-    # calculate how many times a street is used
-    usage = {key: 0 for key in streets}
-    for car in cars:
-        for street in car['path']:
-            usage[street] += 1
-
-    # calculate the total waiting time
-    total_waiting_time = 0
-    for car in cars:
-        time_left = duration
-        for street in car['path']:
-            time_left -= streets[street]['length']
-            if time_left < 0:
-                break
-            total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(solution[streets[street]['end']]) if item['street'] == street), None)]['duration']
-
-    # calculate the solution score
-    score = bonus * len(cars) + (duration - total_waiting_time)
-
-    return score
-
-
-def return_cycle_time(duration, min=10, max=120):
+def return_cycle_time(duration):
     """Given the simulation duration come up with a divisible cycle time
 
     Args:
         duration (int): simulation duration
-        min (int, optional): Minimum cycle time. Defaults to 10.
-        max (int, optional): Maximim cycle time. Defaults to 120.
 
     Returns:
         int: Cycle time in seconds
     """
     divisors = []
-    for i in range(min, max+1):
+    for i in range(1, duration+1):
         if duration % i == 0:
             divisors.append(i)
     choose = random.randint(0, len(divisors)-1)
@@ -191,6 +153,44 @@ def init_solution(streets, number_of_intersactions, cycle_time):
     return intersactions
 
 
+def evaluate_solution(input_data, solution):
+    """Evaluate solution
+
+    Args:
+        input_data (Dict): Input data
+        solution (List): Solution
+
+    Returns:
+        float: Solution score
+    """
+    bonus = input_data['bonus']
+    streets = input_data['streets']
+    cars = input_data['cars']
+    duration = input_data['duration']
+
+    # calculate how many times a street is used
+    usage = {key: 0 for key in streets}
+    for car in cars:
+        for street in car['path']:
+            usage[street] += 1
+
+    # calculate the total waiting time
+    total_waiting_time = 0
+    for car in cars:
+        time_left = duration
+        for street in car['path']:
+            time_left -= streets[street]['length']
+            if time_left < 0:
+                break
+            total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(
+                solution[streets[street]['end']]) if item['street'] == street), None)]['duration']
+
+    # calculate the solution score
+    score = bonus * len(cars) + (duration - total_waiting_time)
+
+    return score
+
+
 def main():
     input_data = read_file()
     streets = input_data['streets']
@@ -198,14 +198,11 @@ def main():
     cycle_time = return_cycle_time(input_data['duration'])
     print('Cycle in Seconds: ', cycle_time)
 
-    print('Evaluation: ')
-
     intersactions = init_solution(
         streets, number_of_intersactions, cycle_time)
-    
+
+    print('Evaluation: ')
     print(evaluate_solution(input_data, intersactions))
-    
-    print(intersactions)
     write_file(intersactions)
 
 
