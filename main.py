@@ -192,6 +192,16 @@ def evaluate_solution(input_data, solution):
 
 
 def validate_solution(intersactions, total_duration, cycle_time):
+    """Validate Given Solution
+
+    Args:
+        intersactions (List): Intersaction List
+        total_duration (int): Total duration of simulation in seconds
+        cycle_time (int): Duration per cycle in seconds
+
+    Returns:
+        str: Message
+    """
     total_sum = 0
     for i in range(len(intersactions)):
         sum_of_points = 0
