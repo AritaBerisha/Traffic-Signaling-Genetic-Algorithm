@@ -1,5 +1,9 @@
 import random
 
+# Genetic Algorithm Parameters
+POPULATION_SIZE = 10
+NUM_GENERATIONS = 5
+NUM_MUTATIONS = 3
 
 def return_cycle_time(duration):
     """Given the simulation duration come up with a divisible cycle time
@@ -19,23 +23,23 @@ def return_cycle_time(duration):
     return cycle_time
 
 
-def write_file(intersections, fname='fiek.out.txt'):
+def write_file(intersactions, fname='fiek.out.txt'):
     """Write solution in file.
 
     Args:
-        intersections (List): Solution
+        intersactions (List): Solution
         fname (str, optional): Output filename. Defaults to 'fiek.out.txt'.
     """
     with open(fname, 'w') as f:
-        f.write(f'{str(len(intersections))}\n')
-        for i in range(len(intersections)):
+        f.write(f'{str(len(intersactions))}\n')
+        for i in range(len(intersactions)):
             f.write(f'{str(i)}\n')
             sum_streets = 0
-            for value in intersections[i]:
+            for value in intersactions[i]:
                 if value['duration'] > 0:
                     sum_streets += 1
             f.write(f'{str(sum_streets)}\n')
-            for value in intersections[i]:
+            for value in intersactions[i]:
                 if value['duration'] > 0:
                     f.write(
                         f"{str(value['street'])} {str(value['duration'])}\n")
@@ -97,7 +101,7 @@ def get_cars(file, streets, number_of_streets, number_of_cars):
         number_of_streets (int): Number of streets
         number_of_cars (int): Number of cars
 
-    Returns:
+     Returns:
         List: List of car information data
     """
     cars = [[] for car in range(number_of_cars)]
@@ -113,10 +117,8 @@ def get_cars(file, streets, number_of_streets, number_of_cars):
         number += 1
     return cars
 
-
 def init_solution(streets, number_of_intersactions, cycle_time):
     """Get initial solution
-
     Args:
         streets (Dict): Street object
         number_of_intersactions (int): Number of intersactions  
@@ -146,16 +148,15 @@ def init_solution(streets, number_of_intersactions, cycle_time):
                         'duration': duration1
                     })
             sum_per_intersaction += sum_per_street
+            
         # If any time has been left allocate all the time left to the last street in the intersaction
         intersactions[i][len(intersactions[i]) -
                          1]['duration'] = cycle_time - sum_per_intersaction
 
     return intersactions
 
-
 def evaluate_solution(input_data, solution):
     """Evaluate solution
-
     Args:
         input_data (Dict): Input data
         solution (List): Solution
@@ -183,17 +184,15 @@ def evaluate_solution(input_data, solution):
             if time_left < 0:
                 break
             total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(
-                solution[streets[street]['end']]) if item['street'] == street), None)]['duration']
+                solution[streets[street]['end']]) if item['street'] == street), 0)]['duration']
 
     # calculate the solution score
     score = bonus * len(cars) + (duration - total_waiting_time)
 
     return score
 
-
 def validate_solution(intersactions, total_duration, cycle_time):
     """Validate Given Solution
-
     Args:
         intersactions (List): Intersaction List
         total_duration (int): Total duration of simulation in seconds
@@ -223,23 +222,173 @@ def validate_solution(intersactions, total_duration, cycle_time):
     else:
         return 'Solution is Valid.'
 
+def selection(input_data, population, elite_size):
+    """Select the parents for crossover based on the fitness score.
+
+    Args:
+        input_data (Dict): Input data.
+        population (List): List of solutions in the current population.
+        elite_size (int): Number of solutions to select as elite.
+
+    Returns:
+        List: List of parent solutions.
+    """
+    fitness_scores = []
+    for i in range(len(population)):
+        score = evaluate_solution(input_data, population[i])
+        fitness_scores.append((population[i], score))
+    fitness_scores.sort(key=lambda x: x[1], reverse=True)
+
+    elite = [x[0] for x in fitness_scores[:elite_size]]
+    parents = [elite[i] for i in range(len(elite))]
+
+    # Add non-elite parents through tournament selection
+    while len(parents) < len(population):
+        tournament = random.sample(population, 2)
+        tournament_scores = [evaluate_solution(input_data, tournament[i])
+                             for i in range(2)]
+        winner = tournament[0] if tournament_scores[0] > tournament_scores[1] else tournament[1]
+        parents.append(winner)
+
+    return parents
+
+def crossover(parents, number_of_intersactions):
+    """Generate offspring from the selected parents through crossover.
+
+    Args:
+        parents (List): List of parent solutions.
+        number_of_intersactions (int): Number of intersactions.
+
+    Returns:
+        List: List of offspring solutions.
+    """
+    offspring = []
+    offspring_size = len(parents)
+    for i in range(offspring_size):
+        parent1_index = i % len(parents)
+        parent2_index = (i+1) % len(parents)
+        parent1 = parents[parent1_index]
+        parent2 = parents[parent2_index]
+
+        # Uniform crossover
+        solution = [[] for _ in range(number_of_intersactions)]
+        for j in range(number_of_intersactions):
+            if j < len(parent1):
+                for k in range(len(parent1[j])):
+                    if random.uniform(0, 1) < 0.5:
+                        solution[j].append(parent1[j][k])
+                    else:
+                        solution[j].append(parent2[j][k])
+            else:
+                solution.append(parent2[j])
+
+        offspring.append(solution)
+
+    return offspring
+
+def mutate(solution, cars, streets):
+    """Randomly change the order of streets a car passes in the given solution.
+
+    Args:
+        solution (List): List of intersactions and their assigned streets and durations.
+        cars (List): List of cars with their paths.
+        streets (Dict): Dictionary of street information.
+
+    Returns:
+        List: New solution after changing the order of streets a car passes.
+    """
+    # Select a random car
+    car_idx = random.randint(0, len(cars)-1)
+    car = cars[car_idx]
+
+    # Select two random positions in the car's path (excluding the first and last streets)
+    street_idx1 = random.randint(1, len(car['path'])-2)
+    street_idx2 = random.randint(1, len(car['path'])-2)
+
+    # Swap the two selected streets in the car's path
+    street1 = car['path'][street_idx1]
+    street2 = car['path'][street_idx2]
+    if street1 in car['path'] and street2 in car['path']:
+        car['path'][street_idx1], car['path'][street_idx2] = car['path'][street_idx2], car['path'][street_idx1]
+    else:
+        mutate()
+
+    for i in range(len(solution)):
+        for j in range(len(solution[i])):
+            if solution[i][j]['street'] == car['path'][street_idx1]:
+                solution[i][j]['street'] = car['path'][street_idx2]
+            elif solution[i][j]['street'] == car['path'][street_idx2]:
+                solution[i][j]['street'] = car['path'][street_idx1]
+
+    return solution
+
+def genetic_algorithm(input_data):
+    """Runs the genetic algorithm to find a solution to the traffic signaling problem.
+    Args: input_data (Dict): Input data.
+    Returns:
+        List: intersaction/Solution data
+    """
+    streets = input_data['streets']
+    number_of_intersactions = input_data['number_of_intersactions']
+    duration = input_data['duration']
+    cycle_time = return_cycle_time(duration)
+    print('Cycle in Seconds: ', cycle_time)
+
+    population_size = 20
+    elite_size = 5
+
+    # Generate initial population
+    population = []
+    for i in range(population_size):
+        solution = init_solution(streets, number_of_intersactions, cycle_time)
+        population.append(solution)
+
+    # Evolve the population
+    for generation in range(20):
+        # Select parents
+        parents = selection(input_data, population, elite_size)
+
+        # Generate offspring through crossover
+        offspring = crossover(parents, number_of_intersactions)
+
+        # Mutate offspring
+        for i in range(len(offspring)): 
+            for j in range(NUM_MUTATIONS):
+                mutate(offspring[i], input_data['cars'], streets)
+
+        # Add parents to offspring
+        offspring.extend(parents)
+
+        # Evaluate fitness of offspring
+        fitness_scores = []
+        for i in range(len(offspring)):
+            score = evaluate_solution(input_data, offspring[i])
+            fitness_scores.append((offspring[i], score))
+        fitness_scores.sort(key=lambda x: x[1], reverse=True)
+
+        # Select the best solutions as the next generation
+        population = [x[0] for x in fitness_scores[:population_size]]
+
+        # Print the fitness score of the best solution in this generation
+        best_fitness_score = fitness_scores[0][1]
+        print('Generation {}: Fitness score of the best solution = {}'.format(
+            generation+1, best_fitness_score))
+
+    # Return the best solution in the final population
+    best_solution = fitness_scores[0][0]
+    return best_solution
 
 def main():
     input_data = read_file()
-    streets = input_data['streets']
-    number_of_intersactions = input_data['number_of_intersactions']
-    cycle_time = return_cycle_time(input_data['duration'])
-    print('Cycle in Seconds: ', cycle_time)
-
-    intersactions = init_solution(
-        streets, number_of_intersactions, cycle_time)
+    best_solution = genetic_algorithm(input_data)
 
     print('Validation: ')
-    print(validate_solution(intersactions, input_data['duration'], cycle_time))
-    print('Evaluation: ')
-    print(evaluate_solution(input_data, intersactions))
-    write_file(intersactions)
-
+    print(validate_solution(best_solution, input_data['duration'], return_cycle_time(input_data['duration'])))
+    write_file(best_solution)
+    # print(validate_solution(intersactions, input_data['duration'], cycle_time))
+    # print('Evaluation: ')
+    # print(evaluate_solution(input_data, intersactions))
+    # write_file(intersactions)
 
 if __name__ == '__main__':
     main()
