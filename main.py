@@ -182,10 +182,15 @@ def evaluate_solution(input_data, solution):
         for street in car['path']:
             time_left -= streets[street]['length']
             if time_left < 0:
-                break
-            total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(
-                solution[streets[street]['end']]) if item['street'] == street), 0)]['duration']
+                time_left = 0
+            else:
+                total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(
+                    solution[streets[street]['end']]) if item['street'] == street), 0)]['duration']
 
+    # if the total waiting time is greater than or equal to the duration of the simulation, return a score of zero
+    if total_waiting_time >= duration:
+        return 0
+    
     # calculate the solution score
     score = bonus * len(cars) + (duration - total_waiting_time)
 
@@ -343,6 +348,8 @@ def genetic_algorithm(input_data):
         solution = init_solution(streets, number_of_intersactions, cycle_time)
         population.append(solution)
 
+    best_score = 0
+    best_solution = None
     # Evolve the population
     for generation in range(20):
         # Select parents
@@ -373,9 +380,12 @@ def genetic_algorithm(input_data):
         best_fitness_score = fitness_scores[0][1]
         print('Generation {}: Fitness score of the best solution = {}'.format(
             generation+1, best_fitness_score))
-
+        
+        if fitness_scores[0][1] >= best_score:
+            best_score = fitness_scores[0][1]
+            best_solution = fitness_scores[0][0]
+    
     # Return the best solution in the final population
-    best_solution = fitness_scores[0][0]
     return best_solution
 
 def main():
@@ -385,10 +395,6 @@ def main():
     print('Validation: ')
     print(validate_solution(best_solution, input_data['duration'], return_cycle_time(input_data['duration'])))
     write_file(best_solution)
-    # print(validate_solution(intersactions, input_data['duration'], cycle_time))
-    # print('Evaluation: ')
-    # print(evaluate_solution(input_data, intersactions))
-    # write_file(intersactions)
 
 if __name__ == '__main__':
     main()
