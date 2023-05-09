@@ -4,6 +4,8 @@ import random
 POPULATION_SIZE = 10
 NUM_GENERATIONS = 5
 NUM_MUTATIONS = 3
+MUTATION_RATE = 0.4
+INVERSION_RATE = 0.6
 
 def return_cycle_time(duration):
     """Given the simulation duration come up with a divisible cycle time
@@ -167,7 +169,6 @@ def init_solution(streets, number_of_intersactions, cycle_time):
 
     return intersactions
 
-
 def evaluate_solution(input_data, solution):
     """Evaluate solution
     Args:
@@ -209,6 +210,48 @@ def evaluate_solution(input_data, solution):
 
     return score
 
+def evaluate_solution_delta(input_data, old_solution, new_solution, old_score, mutated_intersection):
+    """Evaluate solution using delta evaluation method
+    Args:
+        input_data (Dict): Input data
+        old_solution (List): Old Solution
+        new_solution (List): New Solution
+        old_score (float): Old solution score
+        mutated_intersection (int): The mutated intersection index
+
+    Returns:
+        float: New solution score
+    """
+    streets = input_data['streets']
+    cars = input_data['cars']
+    duration = input_data['duration']
+
+    # calculate how many times a street is used
+    usage = {key: 0 for key in streets}
+    for car in cars:
+        for street in car['path']:
+            usage[street] += 1
+
+    # calculate the total waiting time
+    total_waiting_time_diff = 0
+    for car in cars:
+        time_left = duration
+        for street in car['path']:
+            time_left -= streets[street]['length']
+            if time_left < 0:
+                time_left = 0
+            else:
+                intersection = streets[street]['end']
+                if intersection == mutated_intersection:
+                    old_duration = old_solution[intersection][next((index for index, item in enumerate(
+                        old_solution[intersection]) if item['street'] == street), 0)]['duration']
+                    new_duration = new_solution[intersection][next((index for index, item in enumerate(
+                        new_solution[intersection]) if item['street'] == street), 0)]['duration']
+                    total_waiting_time_diff += new_duration - old_duration
+
+    new_score = old_score - total_waiting_time_diff
+
+    return new_score
 
 def validate_solution(intersactions, total_duration, cycle_time):
     """Validate Given Solution
@@ -288,7 +331,8 @@ def select_with_replacement(input_data, population):
         if population_fitnesses[i-1] <= random_number and random_number <= population_fitnesses[i]:
             return population[i]
 
-def mutate(solution):
+def mutate(solution): #swaps the duration of random intersections
+    mutated_intersections = []  # list to store mutated intersections
     for _ in range(NUM_MUTATIONS):
         intersection_index = random.randint(0, len(solution) - 1)
         for _ in range(len(solution[intersection_index]) - 1):
@@ -298,6 +342,24 @@ def mutate(solution):
                 solution[intersection_index][street_index - 1]['duration'] = \
                 solution[intersection_index][street_index - 1]['duration'], \
                 solution[intersection_index][street_index]['duration']
+                if intersection_index not in mutated_intersections:
+                    mutated_intersections.append(intersection_index)
+    return solution, mutated_intersections
+
+def inversion(solution): # third operator
+    """Inversion operator.
+
+    Args:
+        solution (List): Solution
+
+    Returns:
+        List: Solution after inversion operation
+    """
+    for i in range(len(solution)):
+        if len(solution[i]) > 1:
+            start = random.randint(0, len(solution[i])-2)
+            end = random.randint(start+1, len(solution[i])-1)
+            solution[i][start:end+1] = reversed(solution[i][start:end+1])
     return solution
 
 def genetic_algorithm(input_data, cycle_time):
@@ -330,11 +392,35 @@ def genetic_algorithm(input_data, cycle_time):
         for i in range(int(population_size)):
             parentA = select_with_replacement(input_data, population)
             parentB = select_with_replacement(input_data, population)
-            childA, childB = crossover([parentA, parentB])  # rate
-            childA = mutate(childA)  # rate
-            childB = mutate(childB)
-            new_population.append(childA)
-            new_population.append(childB)
+            childA, childB = crossover([parentA, parentB])
+            
+            childA_old_score = evaluate_solution(input_data, childA)
+            childB_old_score = evaluate_solution(input_data, childB)
+            mutated_intersectionA = None
+            mutated_intersectionB = None
+            if random.randint(0, 1) < MUTATION_RATE:
+                childA, mutated_intersectionA = mutate(childA)
+                childB, mutated_intersectionB = mutate(childB)
+
+            if random.randint(0, 1) < INVERSION_RATE:
+                childA = inversion(childA)
+                childB = inversion(childB)
+
+            childA_new_score = evaluate_solution_delta(
+                input_data, parentA, childA, childA_old_score, mutated_intersectionA)
+            childB_new_score = evaluate_solution_delta(
+                input_data, parentB, childB, childB_old_score, mutated_intersectionB)
+            
+            # Check if the new scores are better than the old scores and include the child solutions in the new population accordingly
+            if childA_new_score > childA_old_score:
+                new_population.append(childA)
+            else:
+                new_population.append(parentA)
+
+            if childB_new_score > childB_old_score:
+                new_population.append(childB)
+            else:
+                new_population.append(parentB)
 
         for i in range(len(new_population)):
             score = evaluate_solution(input_data, new_population[i])
@@ -356,7 +442,6 @@ def genetic_algorithm(input_data, cycle_time):
 
     print(evaluate_solution(input_data, best_solution))
     return best_solution
-
 
 def main():
     input_data = read_file()
