@@ -5,7 +5,6 @@ POPULATION_SIZE = 10
 NUM_GENERATIONS = 5
 NUM_MUTATIONS = 3
 
-
 def return_cycle_time(duration):
     """Given the simulation duration come up with a divisible cycle time
 
@@ -244,38 +243,6 @@ def validate_solution(intersactions, total_duration, cycle_time):
     else:
         return 'Solution is Valid.'
 
-
-# def selection(input_data, population, elite_size):
-#     """Select the parents for crossover based on the fitness score.
-
-#     Args:
-#         input_data (Dict): Input data.
-#         population (List): List of solutions in the current population.
-#         elite_size (int): Number of solutions to select as elite.
-
-#     Returns:
-#         List: List of parent solutions.
-#     """
-#     fitness_scores = []
-#     for i in range(len(population)):
-#         score = evaluate_solution(input_data, population[i])
-#         fitness_scores.append((population[i], score))
-#     fitness_scores.sort(key=lambda x: x[1], reverse=True)
-
-#     elite = [x[0] for x in fitness_scores[:elite_size]]
-#     parents = [elite[i] for i in range(len(elite))]
-
-#     # Add non-elite parents through tournament selection
-#     while len(parents) < len(population):
-#         tournament = random.sample(population, 2)
-#         tournament_scores = [evaluate_solution(input_data, tournament[i])
-#                              for i in range(2)]
-#         winner = tournament[0] if tournament_scores[0] > tournament_scores[1] else tournament[1]
-#         parents.append(winner)
-
-#     return parents
-
-
 def crossover(parents):
     """Generate offspring from the selected parents through crossover.
 
@@ -321,18 +288,17 @@ def select_with_replacement(input_data, population):
         if population_fitnesses[i-1] <= random_number and random_number <= population_fitnesses[i]:
             return population[i]
 
-
 def mutate(solution):
-    probability = 0.5
-    for i in range(len(solution)):
-        for j in range(1, len(solution[i])):
-            # random_probability = random.uniform(0, 1)
-            # if probability > random_probability:
-            solution[i][j]['duration'], solution[i][j -
-                                                    1]['duration'] = solution[i][j-1]['duration'], solution[i][j]['duration']
-
+    for _ in range(NUM_MUTATIONS):
+        intersection_index = random.randint(0, len(solution) - 1)
+        for _ in range(len(solution[intersection_index]) - 1):
+            street_index = random.randint(0, len(solution[intersection_index]) - 1)
+            if street_index != 0:  # avoid swapping the first street's duration with itself
+                solution[intersection_index][street_index]['duration'], \
+                solution[intersection_index][street_index - 1]['duration'] = \
+                solution[intersection_index][street_index - 1]['duration'], \
+                solution[intersection_index][street_index]['duration']
     return solution
-
 
 def genetic_algorithm(input_data, cycle_time):
     """Runs the genetic algorithm to find a solution to the traffic signaling problem.
@@ -400,11 +366,6 @@ def main():
     print(validate_solution(best_solution,
           input_data['duration'], cycle_time))
     write_file(best_solution)
-    # print(validate_solution(intersactions, input_data['duration'], cycle_time))
-    # print('Evaluation: ')
-    # print(evaluate_solution(input_data, intersactions))
-    # write_file(intersactions)
-
 
 if __name__ == '__main__':
     main()
