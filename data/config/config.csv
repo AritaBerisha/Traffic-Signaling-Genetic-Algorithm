@@ -1,0 +1,2 @@
+population_size,num_generations,num_mutations,mutation_rate,inversion_rate,tournament,file_name
+10,10,5,0.8,0.1,0,../data/input/fiek.in.txt
