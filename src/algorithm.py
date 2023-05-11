@@ -45,47 +45,89 @@ def init_solution(streets, number_of_intersections, duration):
     return intersections
 
 
-def evaluate_solution(input_data, solution):
-    """Evaluate solution.
+def get_green_light(intersection, current_time):
+    """Get the currently green street and its remaining duration at the given current time.
 
     Args:
-        input_data (Dict): Input data.
-        solution (List): Solution.
+        intersection (list): List of streets at the intersection, each represented as a dictionary with 'street' and 'duration' keys.
+        current_time (int): Current time in the simulation.
 
     Returns:
-        float: Solution score.
+        tuple: A tuple containing the currently green street and its remaining duration.
+            - If no street is currently green, returns (None, 0).
+            - Otherwise, returns (green_street, green_duration) where green_street is the name of the green street
+              and green_duration is the remaining duration for which the street is green.
+
+    """
+    cycle_time = sum(street['duration'] for street in intersection)
+
+    # Check if cycle_time is zero (no valid streets with non-zero duration)
+    if cycle_time == 0:
+        return None, 0
+
+    normalized_time = current_time % cycle_time
+
+    elapsed_time = 0
+    for street in intersection:
+        elapsed_time += street['duration']
+        if normalized_time < elapsed_time:
+            green_street = street['street']
+            green_duration = min(
+                street['duration'], elapsed_time - normalized_time)
+            return green_street, green_duration
+
+    return None, 0
+
+
+def evaluate_solution(input_data, solution):
+    """Evaluate a solution based on the given input data.
+
+    Args:
+        input_data (dict): Input data dictionary containing 'bonus', 'streets', 'cars', and 'duration'.
+        solution (dict): Solution dictionary containing the intersection schedules.
+
+    Returns:
+        int: Score obtained by the solution.
+
     """
     bonus = input_data['bonus']
     streets = input_data['streets']
     cars = input_data['cars']
     duration = input_data['duration']
 
-    # Calculate how many times a street is used
-    usage = {street: 0 for street in streets}
+    score = 0
     for car in cars:
-        for street in car['path']:
-            usage[street] += 1
+        current_time = 0
+        current_street_index = 0
+        car_finished = False
+        final_time = 0
 
-    # Calculate the total waiting time
-    total_waiting_time = 0
-    for car in cars:
-        time_left = duration
-        for street in car['path']:
-            time_left -= streets[street]['length']
-            if time_left < 0:
-                time_left = 0
+        while current_time < duration:
+            street_name = car['path'][current_street_index]
+            intersection = solution[streets[street_name]['end']]
+            green_street, green_duration = get_green_light(
+                intersection, current_time)
+
+            if green_street == street_name:
+                street_length = streets[green_street]['length']
+                time_to_traverse_street = min(green_duration, street_length)
+
+                current_time += time_to_traverse_street
+
+                # Update the current street
+                current_street_index = (
+                    current_street_index + 1) % len(car['path'])
+                if current_street_index == len(car['path']) - 1:
+                    car_finished = True
+                    final_time = current_time
             else:
-                intersection = solution[streets[street]['end']]
-                street_duration = next(
-                    (street['duration'] for street in intersection if street['street'] == street), 0)
-                total_waiting_time += street_duration
+                current_time += 1
+                continue  # Skip to the next iteration
 
-    # If the total waiting time is greater than or equal to the duration of the simulation, return a score of zero
-    if total_waiting_time >= duration:
-        return 0
-
-    # Calculate the solution score
-    score = bonus * len(cars) + (duration - total_waiting_time)
+        if car_finished:
+            remaining_time = max(0, duration - final_time)
+            car_score = bonus + remaining_time
+            score += car_score
 
     return score
 
@@ -103,34 +145,58 @@ def evaluate_solution_delta(input_data, old_solution, new_solution, old_score, m
     Returns:
         float: New solution score
     """
+    bonus = input_data['bonus']
     streets = input_data['streets']
     cars = input_data['cars']
     duration = input_data['duration']
 
-    # calculate how many times a street is used
-    usage = {key: 0 for key in streets}
-    for car in cars:
-        for street in car['path']:
-            usage[street] += 1
+    score_diff = 0
 
-    # calculate the total waiting time
-    total_waiting_time_diff = 0
     for car in cars:
-        time_left = duration
+        pass_through_mutated_intersection = False
         for street in car['path']:
-            time_left -= streets[street]['length']
-            if time_left < 0:
-                time_left = 0
+            if streets[street]['end'] == mutated_intersection:
+                pass_through_mutated_intersection = True
+                break
+
+        if not pass_through_mutated_intersection:
+            continue
+
+        current_time = 0
+        current_street_index = 0
+        car_finished = False
+        final_time = 0
+
+        while current_time < duration:
+            street_name = car['path'][current_street_index]
+            intersection = new_solution[streets[street_name]['end']]
+            green_street, green_duration = get_green_light(
+                intersection, current_time)
+
+            if green_street == street_name:
+                # Calculate the time required to traverse the street
+                street_length = streets[green_street]['length']
+                time_to_traverse_street = min(green_duration, street_length)
+
+                # Update the current time
+                current_time += time_to_traverse_street
+
+                # Update the current street
+                current_street_index = (
+                    current_street_index + 1) % len(car['path'])
+                if current_street_index == len(car['path']) - 1:
+                    car_finished = True
+                    final_time = current_time
             else:
-                intersection = streets[street]['end']
-                if intersection == mutated_intersection:
-                    old_duration = old_solution[intersection][next((index for index, item in enumerate(
-                        old_solution[intersection]) if item['street'] == street), 0)]['duration']
-                    new_duration = new_solution[intersection][next((index for index, item in enumerate(
-                        new_solution[intersection]) if item['street'] == street), 0)]['duration']
-                    total_waiting_time_diff += new_duration - old_duration
+                current_time += 1
+                continue  # Skip to the next iteration
 
-    new_score = old_score - total_waiting_time_diff
+        if car_finished:
+            remaining_time = max(0, duration - final_time)
+            car_score = bonus + remaining_time
+            score_diff += car_score
+
+    new_score = old_score - score_diff
 
     return new_score
 
