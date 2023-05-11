@@ -11,7 +11,7 @@ Experimental mode allows you to play and adjust with the parameters.
 ```shell
 cd src
 
-python main.py --mode experimental --population_size <population_size> --num_generations <num_generations> --num_mutations <num_mutations> --mutation_rate <mutation_rate> --inversion_rate <inversion_rate> --file_name <input_file> --tournament
+python main.py --mode experimental --population_size <population_size> --num_generations <num_generations> --num_mutations <num_mutations> --mutation_rate <mutation_rate> --inversion_rate <inversion_rate> --file_name ../data/input/<input_file> --tournament
 ```
 
 - mode experimental: Sets the execution mode to "experimental".

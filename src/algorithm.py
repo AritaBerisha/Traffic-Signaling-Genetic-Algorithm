@@ -46,27 +46,27 @@ def init_solution(streets, number_of_intersections, duration):
 
 
 def evaluate_solution(input_data, solution):
-    """Evaluate solution
+    """Evaluate solution.
 
     Args:
-        input_data (Dict): Input data
-        solution (List): Solution
+        input_data (Dict): Input data.
+        solution (List): Solution.
 
     Returns:
-        float: Solution score
+        float: Solution score.
     """
     bonus = input_data['bonus']
     streets = input_data['streets']
     cars = input_data['cars']
     duration = input_data['duration']
 
-    # calculate how many times a street is used
-    usage = {key: 0 for key in streets}
+    # Calculate how many times a street is used
+    usage = {street: 0 for street in streets}
     for car in cars:
         for street in car['path']:
             usage[street] += 1
 
-    # calculate the total waiting time
+    # Calculate the total waiting time
     total_waiting_time = 0
     for car in cars:
         time_left = duration
@@ -75,14 +75,16 @@ def evaluate_solution(input_data, solution):
             if time_left < 0:
                 time_left = 0
             else:
-                total_waiting_time += solution[streets[street]['end']][next((index for index, item in enumerate(
-                    solution[streets[street]['end']]) if item['street'] == street), 0)]['duration']
+                intersection = solution[streets[street]['end']]
+                street_duration = next(
+                    (street['duration'] for street in intersection if street['street'] == street), 0)
+                total_waiting_time += street_duration
 
-    # if the total waiting time is greater than or equal to the duration of the simulation, return a score of zero
+    # If the total waiting time is greater than or equal to the duration of the simulation, return a score of zero
     if total_waiting_time >= duration:
         return 0
 
-    # calculate the solution score
+    # Calculate the solution score
     score = bonus * len(cars) + (duration - total_waiting_time)
 
     return score
