@@ -60,3 +60,32 @@ def write_file(intersections, fname='../data/output/fiek.out.txt'):
                     if value['duration'] > 0:
                         submission_file.write(
                             f"{value['street']} {value['duration']}\n")
+
+
+def parse_submission_file(filename):
+    """
+    Parse the submission file for the Google Hash Code's Traffic Signaling Problem.
+
+    Args:
+    filename (str): The path to the submission file.
+
+    Returns:
+    list: A list where each index represents an intersection ID and each element is a list of dictionaries
+    mapping street names to the duration the traffic light is green.
+    """
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    num_intersections = int(lines[0])
+    intersections = [None] * num_intersections  # initialize list with None
+    line_idx = 1
+    for i in range(num_intersections):
+        intersection_id = int(lines[line_idx])
+        num_incoming = int(lines[line_idx+1])
+        schedule = []
+        for j in range(num_incoming):
+            # strip newline character before splitting
+            street, duration = lines[line_idx+2+j].strip().split()
+            schedule.append({'street': street, 'duration': int(duration)})
+        intersections[intersection_id] = schedule
+        line_idx += 2 + num_incoming  # move to the next intersection
+    return intersections

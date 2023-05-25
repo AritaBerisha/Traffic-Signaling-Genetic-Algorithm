@@ -1,6 +1,7 @@
 import copy
 import random
 from helper import return_cycle_time
+import time
 
 
 def init_solution(streets, number_of_intersections, duration):
@@ -65,16 +66,26 @@ def get_green_light(intersection, current_time):
     if cycle_time == 0:
         return None, 0
 
+    num_streets = len(intersection)
+    if num_streets == 1:
+        # If only one street, it is always green
+        street = intersection[0]['street']
+        return street, intersection[0]['duration']
+
     normalized_time = current_time % cycle_time
 
     elapsed_time = 0
-    for street in intersection:
+    for i, street in enumerate(intersection):
         elapsed_time += street['duration']
         if normalized_time < elapsed_time:
             green_street = street['street']
             green_duration = min(
                 street['duration'], elapsed_time - normalized_time)
             return green_street, green_duration
+
+        if i == num_streets - 1:
+            # If we reached the last street, go back to the first street in the next cycle
+            elapsed_time = 0
 
     return None, 0
 
@@ -101,28 +112,41 @@ def evaluate_solution(input_data, solution):
         current_street_index = 0
         car_finished = False
         final_time = 0
-
         while current_time < duration:
             street_name = car['path'][current_street_index]
-            intersection = solution[streets[street_name]['end']]
-            green_street, green_duration = get_green_light(
-                intersection, current_time)
+            intersection = solution[streets[street_name]['end']
+                                    ] if streets[street_name]['end'] < len(solution) else False
+            if intersection:
+                street_exists = True if street_name in [
+                    street['street'] for street in intersection] else False
+                if not street_exists:
+                    break
+                green_street, green_duration = get_green_light(
+                    intersection, current_time)
 
-            if green_street == street_name:
-                street_length = streets[green_street]['length']
-                time_to_traverse_street = min(green_duration, street_length)
+                if green_street is None:
+                    break
 
-                current_time += time_to_traverse_street
-
-                # Update the current street
-                current_street_index = (
-                    current_street_index + 1) % len(car['path'])
-                if current_street_index == len(car['path']) - 1:
-                    car_finished = True
-                    final_time = current_time
+                if green_street == street_name:
+                    current_street_index = (
+                        current_street_index + 1) % len(car['path'])
+                    street_length = streets[car['path']
+                                            [current_street_index]]['length']
+                    final_intersection = solution[streets[car['final']]['end']
+                                                  ] if streets[car['final']]['end'] < len(solution) else False
+                    current_time += street_length
+                    if final_intersection:
+                        if current_street_index == len(car['path']) - 1 and current_time < duration and car['final'] in [street['street'] for street in final_intersection]:
+                            car_finished = True
+                            final_time = current_time
+                            break
+                    else:
+                        break
+                else:
+                    current_time += green_duration
+                    continue  # Skip to the next iteration
             else:
-                current_time += 1
-                continue  # Skip to the next iteration
+                break
 
         if car_finished:
             remaining_time = max(0, duration - final_time)
@@ -169,27 +193,40 @@ def evaluate_solution_delta(input_data, old_solution, new_solution, old_score, m
 
         while current_time < duration:
             street_name = car['path'][current_street_index]
-            intersection = new_solution[streets[street_name]['end']]
-            green_street, green_duration = get_green_light(
-                intersection, current_time)
+            intersection = new_solution[streets[street_name]['end']] if streets[street_name]['end'] < len(
+                new_solution) else False
+            if intersection:
+                street_exists = True if street_name in [
+                    street['street'] for street in intersection] else False
+                if not street_exists:
+                    break
+                green_street, green_duration = get_green_light(
+                    intersection, current_time)
 
-            if green_street == street_name:
-                # Calculate the time required to traverse the street
-                street_length = streets[green_street]['length']
-                time_to_traverse_street = min(green_duration, street_length)
+                if green_street is None:
+                    break
 
-                # Update the current time
-                current_time += time_to_traverse_street
-
-                # Update the current street
-                current_street_index = (
-                    current_street_index + 1) % len(car['path'])
-                if current_street_index == len(car['path']) - 1:
-                    car_finished = True
-                    final_time = current_time
+                if green_street == street_name:
+                    current_street_index = (
+                        current_street_index + 1) % len(car['path'])
+                    street_length = streets[car['path']
+                                            [current_street_index]]['length']
+                    final_intersection = new_solution[streets[car['final']]['end']] if streets[car['final']]['end'] < len(
+                        new_solution) else False
+                    current_time += street_length
+                    if final_intersection:
+                        if current_street_index == len(car['path']) - 1 and current_time < duration and car[
+                                'final'] in [street['street'] for street in final_intersection]:
+                            car_finished = True
+                            final_time = current_time
+                            break
+                    else:
+                        break
+                else:
+                    current_time += green_duration
+                    continue  # Skip to the next iteration
             else:
-                current_time += 1
-                continue  # Skip to the next iteration
+                break
 
         if car_finished:
             remaining_time = max(0, duration - final_time)
@@ -353,7 +390,8 @@ def genetic_algorithm(input_data, parameters):
     Returns:
         list: Intersection/solution data.
     """
-    population_size, num_generations, num_mutations, mutation_rate, inversion_rate, tournament = parameters
+    population_size, num_mutations, mutation_rate, inversion_rate, tournament = parameters
+
     streets = input_data['streets']
     number_of_intersections = input_data['number_of_intersections']
 
@@ -366,9 +404,11 @@ def genetic_algorithm(input_data, parameters):
     best_solution = population[0]
     print('Initial Solution:', evaluate_solution(input_data, best_solution))
 
-    fitness_scores = [[] for i in range(num_generations)]
+    start_time = time.time()
+    generation = 0
+    fitness_scores = []
 
-    for generation in range(num_generations):
+    while time.time() - start_time < 5:
         for solution in population:
             if evaluate_solution(input_data, solution) > evaluate_solution(input_data, best_solution):
                 best_solution = solution
@@ -416,6 +456,8 @@ def genetic_algorithm(input_data, parameters):
             else:
                 new_population.append(parentB)
 
+        # Store the fitness scores of this generation
+        fitness_scores.append([])
         for i in range(len(new_population)):
             score = evaluate_solution(input_data, new_population[i])
             fitness_scores[generation].append((new_population[i], score))
@@ -432,6 +474,8 @@ def genetic_algorithm(input_data, parameters):
 
         if evaluate_solution(input_data, best_solution) < fitness_scores[generation][0][1]:
             best_solution = fitness_scores[generation][0][0]
+
+        generation += 1
 
     print('Best Solution', evaluate_solution(input_data, best_solution))
     return best_solution

@@ -1,15 +1,38 @@
+9
+0
+4
+Qerimi-FIEK 7
+Menza-FIEK 2
+EULEX-FIEK 2
+Rr.B-FIEK 13
+1
+2
+FIEK-Rr.B 3
+EULEX-Rr.B 2
+2
+1
+Rr.B-EULEX 20
+3
+2
+Katedralja-Menza 16
+FIEK-Menza 84
 4
 2
-1
-Rr.B-EULEX 2
+Qafa-Qerimi 3
+FIEK-Qerimi 6
 5
-1
-Menza-Katedralja 3
+2
+Santeja-Katedralja 2
+Menza-Katedralja 15
 6
 2
-Rilindja-Santeja 2
-Rilindja-Santeja 2
+Rilindja-Santeja 11
+Katedralja-Santeja 2
+7
+2
+Qafa-Rilindja 1
+Qafa-Rilindja 1
 8
 2
-Rilindja-Qafa 1
-Rilindja-Qafa 1
+Rilindja-Qafa 2
+Qerimi-Qafa 22
