@@ -1,0 +1,11 @@
+output_file,population_size,num_mutations,mutation_rate,inversion_rate,tournament,score
+../data/output\b_by_the_ocean1.out.txt,10,50,0.2,0.2,0,1280714
+../data/output\b_by_the_ocean2.out.txt,50,50,0.4,0.4,1,1087105
+../data/output\b_by_the_ocean3.out.txt,100,50,0.6,0.6,0,1338091
+../data/output\b_by_the_ocean4.out.txt,10,100,0.2,0.8,1,1371735
+../data/output\b_by_the_ocean5.out.txt,50,100,0.4,0.2,0,1079207
+../data/output\b_by_the_ocean6.out.txt,100,100,0.8,0.4,1,1202344
+../data/output\b_by_the_ocean7.out.txt,5,1000,0.2,0.6,0,1458948
+../data/output\b_by_the_ocean8.out.txt,10,1000,0.4,0.8,1,1502454
+../data/output\b_by_the_ocean9.out.txt,50,1000,0.6,0.2,0,1400455
+../data/output\b_by_the_ocean10.out.txt,100,1000,0.8,0.4,1,1279151

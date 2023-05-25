@@ -1,0 +1,2 @@
+output_file,population_size,num_mutations,mutation_rate,inversion_rate,tournament,score
+../data/output\f_forever_jammed1.out.txt,10,5,0.2,0.2,0,9141

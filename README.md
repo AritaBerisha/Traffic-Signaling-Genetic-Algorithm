@@ -1,36 +1,39 @@
 # Traffic-Signaling-Genetic-Algorithm
 
+This project provides an implementation of a genetic algorithm for traffic signal optimization, in accordance with University of Prishtina, Computer Engineering (https://fiek.uni-pr.edu/)
+
 ## Running the Genetic Algorithm
 
 To run the genetic algorithm, you can use one of the following commands based on your desired execution mode.
 
-### Experimental Mode
+### Standard Mode
 
-Experimental mode allows you to play and adjust with the parameters. 
+Standard mode allows you to play and adjust with the parameters. 
 
 ```shell
 cd src
 
-python main.py --mode experimental --population_size <population_size> --num_generations <num_generations> --num_mutations <num_mutations> --mutation_rate <mutation_rate> --inversion_rate <inversion_rate> --file_name ../data/input/<input_file> --tournament
+python main.py --mode standard --population_size <population_size> --num_mutations <num_mutations> --mutation_rate <mutation_rate> --inversion_rate <inversion_rate> --tournament --file_name ../data/input/<input_file>
+
 ```
 
-- mode experimental: Sets the execution mode to "experimental".
-- population_size <population_size>: Specifies the population size.
-- num_generations <num_generations>: Specifies the number of generations.
-- num_mutations <num_mutations>: Specifies the number of mutations.
-- mutation_rate <mutation_rate>: Specifies the mutation rate.
-- inversion_rate <inversion_rate>: Specifies the inversion rate.
-- file_name <input_file>: Specifies the input file name.
-- tournament: Enables the tournament selection.
+- mode: This should be standard.
+- population_size: The size of the population for the genetic algorithm.
+- num_mutations: The number of mutations.
+- mutation_rate: The mutation rate.
+- inversion_rate: The inversion rate.
+- tournament: Pass this option to enable tournament selection.
+- file_name: The name of the input file.
 
-### Standard mode
+### Experimental mode
 
-The command runs the genetic algorithm in the standard mode. The algorithm will read the parameters from a CSV file named parameters.csv 
+The command runs the genetic algorithm in the experimental mode. The algorithm will read the parameters from a CSV file named parameters.csv 
 
 ```shell
 cd src
 
-python main.py --mode standard
+python main.py --mode experimental --config ../data/config/<config_file>
+
 ```
 
 The CSV File contains:

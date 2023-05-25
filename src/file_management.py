@@ -78,7 +78,7 @@ def parse_submission_file(filename):
     num_intersections = int(lines[0])
     intersections = [None] * num_intersections  # initialize list with None
     line_idx = 1
-    for i in range(num_intersections):
+    while line_idx < len(lines):
         intersection_id = int(lines[line_idx])
         num_incoming = int(lines[line_idx+1])
         schedule = []
@@ -86,6 +86,18 @@ def parse_submission_file(filename):
             # strip newline character before splitting
             street, duration = lines[line_idx+2+j].strip().split()
             schedule.append({'street': street, 'duration': int(duration)})
+
+        # Ensure our intersections list is long enough
+        if intersection_id >= len(intersections):
+            intersections.extend(
+                [None] * (intersection_id - len(intersections) + 1))
+
         intersections[intersection_id] = schedule
         line_idx += 2 + num_incoming  # move to the next intersection
+
+    # Fill skipped intersections with default values
+    for i in range(len(intersections)):
+        if intersections[i] is None:
+            intersections[i] = [{'street': 'default', 'duration': 0}]
+
     return intersections

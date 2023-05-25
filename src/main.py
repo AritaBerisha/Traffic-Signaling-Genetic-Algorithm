@@ -17,9 +17,10 @@ def main():
 
 
 if __name__ == '__main__':
-    # submission_result = parse_submission_file('../data/output/fiek1.out.txt')
-    # input_data = read_file('../data/input/fiek.in.txt')
-    # submission_score = evaluate_solution(input_data, submission_result)
-    # print('Score: ', submission_score)
+    submission_result = parse_submission_file(
+        '../data/output/e_etoile1.out.txt')
+    input_data = read_file('../data/input/e_etoile.in.txt')
+    submission_score = evaluate_solution(input_data, submission_result)
+    print('Score: ', submission_score)
     # # experiment()
-    main()
+    # main()
