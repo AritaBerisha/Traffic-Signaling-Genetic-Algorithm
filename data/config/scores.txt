@@ -1,2 +1,0 @@
-../data/output\fiek1.out.txt: 1004
-../data/output\fiek2.out.txt: 894

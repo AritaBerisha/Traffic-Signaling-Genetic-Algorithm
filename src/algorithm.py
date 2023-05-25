@@ -390,6 +390,7 @@ def genetic_algorithm(input_data, parameters):
     Returns:
         list: Intersection/solution data.
     """
+    start_time = time.time()
     population_size, num_mutations, mutation_rate, inversion_rate, tournament = parameters
 
     streets = input_data['streets']
@@ -402,13 +403,12 @@ def genetic_algorithm(input_data, parameters):
         population.append(solution)
 
     best_solution = population[0]
-    print('Initial Solution:', evaluate_solution(input_data, best_solution))
+    print('Initial Solution: ', evaluate_solution(input_data, best_solution))
 
-    start_time = time.time()
     generation = 0
     fitness_scores = []
 
-    while time.time() - start_time < 5:
+    while time.time() - start_time < 5*60:
         for solution in population:
             if evaluate_solution(input_data, solution) > evaluate_solution(input_data, best_solution):
                 best_solution = solution
@@ -469,15 +469,15 @@ def genetic_algorithm(input_data, parameters):
         # Print the fitness score of the best solution in this generation
         best_fitness_score = fitness_scores[generation][0][1]
 
-        print('Generation {}: Fitness score of the best solution = {}'.format(
-            generation + 1, best_fitness_score))
+        # print('Generation {}: Fitness score of the best solution = {}'.format(
+        #     generation + 1, best_fitness_score))
 
         if evaluate_solution(input_data, best_solution) < fitness_scores[generation][0][1]:
             best_solution = fitness_scores[generation][0][0]
 
         generation += 1
 
-    print('Best Solution', evaluate_solution(input_data, best_solution))
+    print('Best Solution: ', evaluate_solution(input_data, best_solution))
     return best_solution
 
 

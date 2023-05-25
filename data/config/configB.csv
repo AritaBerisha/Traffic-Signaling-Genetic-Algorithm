@@ -1,0 +1,11 @@
+file_name,population_size,num_mutations,mutation_rate,inversion_rate,tournament
+../data/input/b_by_the_ocean.in.txt,10,50,0.2,0.2,0
+../data/input/b_by_the_ocean.in.txt,50,50,0.4,0.4,1
+../data/input/b_by_the_ocean.in.txt,100,50,0.6,0.6,0
+../data/input/b_by_the_ocean.in.txt,10,100,0.2,0.8,1
+../data/input/b_by_the_ocean.in.txt,50,100,0.4,0.2,0
+../data/input/b_by_the_ocean.in.txt,100,100,0.8,0.4,1
+../data/input/b_by_the_ocean.in.txt,5,1000,0.2,0.6,0
+../data/input/b_by_the_ocean.in.txt,10,1000,0.4,0.8,1
+../data/input/b_by_the_ocean.in.txt,50,1000,0.6,0.2,0
+../data/input/b_by_the_ocean.in.txt,100,1000,0.8,0.4,1

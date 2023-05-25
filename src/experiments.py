@@ -5,7 +5,7 @@ import csv
 import os
 
 
-def experiment():
+def experiment(configuration_file):
     """
     Function to execute a series of genetic algorithm experiments based on a configuration CSV file. 
 
@@ -18,11 +18,11 @@ def experiment():
     - Generates a corresponding output file path by replacing 'input' with 'output' in the input file path, and 
       replacing '.in.' with a counter number and '.out.' in the file name.
     - Writes the result of the genetic algorithm to this output file.
-    - Stores the score of the result for later use.
+    - Stores the output file path and score of the result for later use.
 
-    After all rows in the CSV file have been processed, the function writes all scores to a file located at 
-    '../data/config/scores.txt'. The file contains one line per output file, each line consisting of the output 
-    file path and the corresponding score.
+    After all rows in the CSV file have been processed, the function writes all output file paths and scores to a new 
+    CSV file named 'resultA.csv'. The file contains one line per experiment, each line consisting of the original data 
+    from the config CSV file, with the 'file_name' column replaced by the 'output_file' column, and a new 'score' column added.
 
     Args:
         None
@@ -30,13 +30,20 @@ def experiment():
     Returns:
         None
     """
-    scores_dict = {}
     output_counter = {}
+    csv_rows = []
 
-    with open('../data/config/config.csv', 'r') as config_file:
+    result_file_path = configuration_file.replace('config', 'results')
+
+    with open(configuration_file, 'r') as config_file:
         csv_reader = csv.reader(config_file)
-        next(csv_reader)  # Skip the header
+        headers = next(csv_reader)  # Read the header
+        headers[0] = 'output_file'  # Replace 'file_name' with 'output_file'
+        csv_rows.append(headers + ['score'])
+        instance_counter = 1
+
         for row in csv_reader:
+            print('Currently in session Instance ', instance_counter)
             input_file = row[0]
             parameters = (int(row[1]), int(row[2]), float(
                 row[3]), float(row[4]), row[5] == 'True')
@@ -66,10 +73,15 @@ def experiment():
             write_file(result, output_filename)
 
             # Save score for each output file
-            scores_dict[output_filename] = evaluate_solution(
-                input_data, result)
+            score = evaluate_solution(input_data, result)
 
-    # Write scores to a file
-    with open('../data/config/scores.txt', 'w') as scores_file:
-        for output_file, score in scores_dict.items():
-            scores_file.write(f"{output_file}: {score}\n")
+            # Replace input file name with output file name and append score to the row
+            row[0] = output_filename
+            row.append(score)
+            csv_rows.append(row)
+            instance_counter += 1
+
+    # Write output file paths and scores to a new CSV file
+    with open(result_file_path, 'w', newline='') as result_file:
+        csv_writer = csv.writer(result_file)
+        csv_writer.writerows(csv_rows)

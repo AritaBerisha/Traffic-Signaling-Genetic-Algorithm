@@ -1,6 +1,8 @@
 import argparse
 import csv
 
+from experiments import experiment
+
 
 def read_csv():
     """Read the parameter values from a CSV file.
@@ -20,7 +22,6 @@ def read_terminal():
     Returns:
         tuple: A tuple containing the extracted values in the following order:
             - population_size (int): Population size
-            - num_generations (int): Number of generations
             - num_mutations (int): Number of mutations
             - mutation_rate (float): Mutation rate
             - inversion_rate (float): Inversion rate
@@ -32,13 +33,11 @@ def read_terminal():
 
     # Add arguments
     parser.add_argument(
-        '--mode', choices=['experimental', 'standard'], default='experimental', help='Execution mode')
+        '--mode', choices=['experimental', 'standard'], default='standard', help='Execution mode')
 
-    # Experimental mode arguments
+    # Standard mode arguments
     parser.add_argument('--population_size', type=int,
                         default=0, help='Population size')
-    parser.add_argument('--num_generations', type=int,
-                        default=0, help='Number of generations')
     parser.add_argument('--num_mutations', type=int,
                         default=0, help='Number of mutations')
     parser.add_argument('--mutation_rate', type=float,
@@ -49,14 +48,15 @@ def read_terminal():
                         help='Enable tournament')
     parser.add_argument('--file_name', type=str,
                         default='', help='Input file name')
+    parser.add_argument('--config', type=str,
+                        default='', help='Config file name')
 
     args = parser.parse_args()
 
     mode = args.mode
 
-    if mode == 'experimental':
+    if mode == 'standard':
         population_size = args.population_size
-        num_generations = args.num_generations
         num_mutations = args.num_mutations
         mutation_rate = args.mutation_rate
         inversion_rate = args.inversion_rate
@@ -66,9 +66,6 @@ def read_terminal():
         if not population_size:
             parser.error(
                 "Population Size should be set.")
-
-        if not num_generations:
-            parser.error('Number of Generations should be set.')
 
         if not num_mutations:
             parser.error('Number of Mutations should be set.')
@@ -82,28 +79,20 @@ def read_terminal():
         if not file_name:
             parser.error('File Name should be set.')
 
-    elif mode == 'standard':
+        print("Population Size:", population_size)
+        print("Number of Mutations:", num_mutations)
+        print("Mutation Rate:", mutation_rate)
+        print("Inversion Rate:", inversion_rate)
+        print("File Name:", file_name)
+        print("Tournament:", tournament)
+
+        return population_size, num_mutations, mutation_rate, inversion_rate, tournament, file_name
+
+    elif mode == 'experimental':
         print("Execution Mode: Standard")
-        parameters = read_csv()
-        population_size = int(parameters.get('population_size', 0))
-        num_generations = int(parameters.get('num_generations', 0))
-        num_mutations = int(parameters.get('num_mutations', 0))
-        mutation_rate = float(parameters.get('mutation_rate', 0.0))
-        inversion_rate = float(parameters.get('inversion_rate', 0.0))
-        tournament = True if int(parameters.get(
-            'tournament', 0)) == 1 else False
-        file_name = parameters.get('file_name', '')
+        experiment(args.config)
+        return 'experimental'
 
     else:
         parser.error(
             "Invalid mode. Supported modes are 'experimental' and 'standard'.")
-
-    print("Population Size:", population_size)
-    print("Number of Generations:", num_generations)
-    print("Number of Mutations:", num_mutations)
-    print("Mutation Rate:", mutation_rate)
-    print("Inversion Rate:", inversion_rate)
-    print("File Name:", file_name)
-    print("Tournament:", tournament)
-
-    return population_size, num_generations, num_mutations, mutation_rate, inversion_rate, tournament, file_name

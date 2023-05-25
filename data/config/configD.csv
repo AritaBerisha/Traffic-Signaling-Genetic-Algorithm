@@ -1,0 +1,11 @@
+file_name,population_size,num_mutations,mutation_rate,inversion_rate,tournament
+../data/input/d_daily_commute.in.txt,10,5,0.2,0.2,0
+../data/input/d_daily_commute.in.txt,50,5,0.4,0.4,1
+../data/input/d_daily_commute.in.txt,100,5,0.6,0.6,0
+../data/input/d_daily_commute.in.txt,10,10,0.2,0.8,1
+../data/input/d_daily_commute.in.txt,50,10,0.4,0.2,0
+../data/input/d_daily_commute.in.txt,100,10,0.8,0.4,1
+../data/input/d_daily_commute.in.txt,5,100,0.2,0.6,0
+../data/input/d_daily_commute.in.txt,10,100,0.4,0.8,1
+../data/input/d_daily_commute.in.txt,50,100,0.6,0.2,0
+../data/input/d_daily_commute.in.txt,100,100,0.8,0.4,1
