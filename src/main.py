@@ -1,9 +1,7 @@
-from file_management import read_file, write_file, parse_submission_file
+from file_management import read_file, write_file
 from helper import get_output_filename
-from algorithm import genetic_algorithm, evaluate_solution
-from validation import validate_solution
+from algorithm import genetic_algorithm
 from terminal import read_terminal
-from experiments import experiment
 
 
 def main():
@@ -17,10 +15,4 @@ def main():
 
 
 if __name__ == '__main__':
-    submission_result = parse_submission_file(
-        '../data/output/e_etoile1.out.txt')
-    input_data = read_file('../data/input/e_etoile.in.txt')
-    submission_score = evaluate_solution(input_data, submission_result)
-    print('Score: ', submission_score)
-    # # experiment()
-    # main()
+    main()

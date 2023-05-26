@@ -1,3 +1,0 @@
-output_file,population_size,num_mutations,mutation_rate,inversion_rate,tournament,score
-../data/output\d_daily_commute1.out.txt,10,5,0.2,0.2,0,0
-../data/output\d_daily_commute2.out.txt,50,5,0.4,0.4,1,0
