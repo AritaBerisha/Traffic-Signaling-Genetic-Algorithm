@@ -1,6 +1,6 @@
 # Traffic-Signaling-Genetic-Algorithm
 
-This project provides an implementation of a genetic algorithm for traffic signal optimization, in accordance with University of Prishtina, Computer Engineering (https://fiek.uni-pr.edu/)
+This project provides an implementation of a genetic algorithm for traffic signal optimization, in accordance with the University of Prishtina, Computer Engineering Department (https://fiek.uni-pr.edu/)
 
 ## Running the Genetic Algorithm
 

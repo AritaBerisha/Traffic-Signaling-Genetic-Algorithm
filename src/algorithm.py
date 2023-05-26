@@ -144,7 +144,7 @@ def evaluate_solution(input_data, solution):
                         break
                 else:
                     current_time += green_duration
-                    continue  # Skip to the next iteration
+                    continue
             else:
                 break
 
@@ -224,7 +224,7 @@ def evaluate_solution_delta(input_data, old_solution, new_solution, old_score, m
                         break
                 else:
                     current_time += green_duration
-                    continue  # Skip to the next iteration
+                    continue
             else:
                 break
 
@@ -408,7 +408,7 @@ def genetic_algorithm(input_data, parameters):
     generation = 0
     fitness_scores = []
 
-    while time.time() - start_time < 5*60:
+    while time.time() - start_time < 3*60:
         for solution in population:
             if evaluate_solution(input_data, solution) > evaluate_solution(input_data, best_solution):
                 best_solution = solution
@@ -466,7 +466,6 @@ def genetic_algorithm(input_data, parameters):
         population = [x[0]
                       for x in fitness_scores[generation][:population_size]]
 
-        # Print the fitness score of the best solution in this generation
         best_fitness_score = fitness_scores[generation][0][1]
 
         # print('Generation {}: Fitness score of the best solution = {}'.format(

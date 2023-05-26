@@ -48,6 +48,7 @@ def read_terminal():
                         help='Enable tournament')
     parser.add_argument('--file_name', type=str,
                         default='', help='Input file name')
+    # Experimental mode arguments
     parser.add_argument('--config', type=str,
                         default='', help='Config file name')
 

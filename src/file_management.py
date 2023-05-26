@@ -83,7 +83,6 @@ def parse_submission_file(filename):
         num_incoming = int(lines[line_idx+1])
         schedule = []
         for j in range(num_incoming):
-            # strip newline character before splitting
             street, duration = lines[line_idx+2+j].strip().split()
             schedule.append({'street': street, 'duration': int(duration)})
 

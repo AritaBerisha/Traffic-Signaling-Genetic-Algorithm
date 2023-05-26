@@ -37,8 +37,8 @@ def experiment(configuration_file):
 
     with open(configuration_file, 'r') as config_file:
         csv_reader = csv.reader(config_file)
-        headers = next(csv_reader)  # Read the header
-        headers[0] = 'output_file'  # Replace 'file_name' with 'output_file'
+        headers = next(csv_reader)
+        headers[0] = 'output_file'
         csv_rows.append(headers + ['score'])
         instance_counter = 1
 
